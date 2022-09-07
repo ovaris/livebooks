@@ -13,13 +13,13 @@ alias VegaLite, as: Vl
 
 ## Datan haku rajapinnasta
 
-Sähkön spot-hinnat haetaan API:sat, joka on erillinen Elixir Phoenix projekti hostattuna fly.io:ssa
+Sähkön spot-hinnat haetaan API:sta, joka on erillinen Elixir Phoenix projekti hostattuna fly.io:ssa
 
 API:sta löytyy tällä hetkellä seuraavat palvelut:
 
-* `/today`: kuluvan päivän hinnat
-* `/now`: hinta juuri nyt
-* `/next_24hrs`: seuraavan 24 tunnin hinnat
+* `/today` kuluvan päivän hinnat
+* `/now` hinta juuri nyt
+* `/next_24hrs` seuraavan 24 tunnin hinnat
 
 ```elixir
 {:ok, %HTTPoison.Response{status_code: 200, body: body}} =
