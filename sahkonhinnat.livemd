@@ -65,3 +65,11 @@ Vl.new(width: 800, height: 500, title: "Sähkön hinta tänään")
   |> Vl.encode(:tooltip, value: "")
 ])
 ```
+
+## Halvimmat tunnit
+
+```elixir
+price_data
+|> Enum.sort_by(&Map.fetch!(&1, "price"))
+|> Enum.take(5)
+```
