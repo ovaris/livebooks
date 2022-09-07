@@ -1,4 +1,4 @@
-# Sähkön hintoja
+# Electricity prices in Finland
 
 ```elixir
 Mix.install([
@@ -11,15 +11,15 @@ Mix.install([
 alias VegaLite, as: Vl
 ```
 
-## Datan haku rajapinnasta
+## Data fetching
 
-Sähkön spot-hinnat haetaan API:sta, joka on erillinen Elixir Phoenix projekti hostattuna fly.io:ssa
+Spot prices are fetched from my own service, built with Elixir Phoenix.
 
-API:sta löytyy tällä hetkellä seuraavat palvelut:
+API provides following endpoints
 
-* `/today` kuluvan päivän hinnat
-* `/now` hinta juuri nyt
-* `/next_24hrs` seuraavan 24 tunnin hinnat
+* `/api/price/today` todays prices
+* `/api/price/now` current hour price
+* `/api/price/next_24hrs` prices on following 24hrs
 
 ```elixir
 {:ok, %HTTPoison.Response{status_code: 200, body: body}} =
@@ -28,22 +28,22 @@ API:sta löytyy tällä hetkellä seuraavat palvelut:
 price_data = Jason.decode!(body)
 ```
 
-## Smartcell graafi
+## Using smartcell chart
 
-<!-- livebook:{"attrs":{"chart_title":"Hinnat tänään","height":600,"layers":[{"chart_type":"bar","color_field":null,"color_field_aggregate":null,"color_field_type":null,"data_variable":"price_data","x_field":"date","x_field_aggregate":null,"x_field_type":"temporal","y_field":"price","y_field_aggregate":null,"y_field_type":"quantitative"}],"vl_alias":"Elixir.Vl","width":800},"kind":"Elixir.KinoVegaLite.ChartCell","livebook_object":"smart_cell"} -->
+<!-- livebook:{"attrs":{"chart_title":"Prices today","height":600,"layers":[{"chart_type":"bar","color_field":null,"color_field_aggregate":null,"color_field_type":null,"data_variable":"price_data","x_field":"date","x_field_aggregate":null,"x_field_type":"temporal","y_field":"price","y_field_aggregate":null,"y_field_type":"quantitative"}],"vl_alias":"Elixir.Vl","width":800},"kind":"Elixir.KinoVegaLite.ChartCell","livebook_object":"smart_cell"} -->
 
 ```elixir
-Vl.new(width: 800, height: 600, title: "Hinnat tänään")
+Vl.new(width: 800, height: 600, title: "Prices today")
 |> Vl.data_from_values(price_data, only: ["date", "price"])
 |> Vl.mark(:bar)
 |> Vl.encode_field(:x, "date", type: :temporal)
 |> Vl.encode_field(:y, "price", type: :quantitative)
 ```
 
-## Custom graafi
+## Custom graph
 
 ```elixir
-Vl.new(width: 800, height: 500, title: "Sähkön hinta tänään")
+Vl.new(width: 800, height: 500, title: "Electricity prices today")
 |> Vl.data_from_values(price_data)
 |> Vl.layers([
   Vl.new()
@@ -66,10 +66,16 @@ Vl.new(width: 800, height: 500, title: "Sähkön hinta tänään")
 ])
 ```
 
-## Halvimmat tunnit
+## Cheapest hours
 
 ```elixir
 price_data
 |> Enum.sort_by(&Map.fetch!(&1, "price"))
 |> Enum.take(5)
+
+# |> Enum.map(fn %{"date" => date, "price" => price} ->
+#  {:ok, dt, _} = DateTime.from_iso8601(date)
+#  {Calendar.strftime(dt, "%H:%M"), price}
+# end)
+# |> Enum.with_index(1)
 ```
