@@ -1,4 +1,4 @@
-# Sähkön hinnat testausta
+# Sähkön hintoja
 
 ```elixir
 Mix.install([
@@ -11,7 +11,15 @@ Mix.install([
 alias VegaLite, as: Vl
 ```
 
-## Section
+## Datan haku rajapinnasta
+
+Sähkön spot-hinnat haetaan API:sat, joka on erillinen Elixir Phoenix projekti hostattuna fly.io:ssa
+
+API:sta löytyy tällä hetkellä seuraavat palvelut:
+
+* `/today`: kuluvan päivän hinnat
+* `/now`: hinta juuri nyt
+* `/next_24hrs`: seuraavan 24 tunnin hinnat
 
 ```elixir
 {:ok, %HTTPoison.Response{status_code: 200, body: body}} =
@@ -19,6 +27,8 @@ alias VegaLite, as: Vl
 
 price_data = Jason.decode!(body)
 ```
+
+## Smartcell graafi
 
 <!-- livebook:{"attrs":{"chart_title":"Hinnat tänään","height":600,"layers":[{"chart_type":"bar","color_field":null,"color_field_aggregate":null,"color_field_type":null,"data_variable":"price_data","x_field":"date","x_field_aggregate":null,"x_field_type":"temporal","y_field":"price","y_field_aggregate":null,"y_field_type":"quantitative"}],"vl_alias":"Elixir.Vl","width":800},"kind":"Elixir.KinoVegaLite.ChartCell","livebook_object":"smart_cell"} -->
 
@@ -29,6 +39,8 @@ Vl.new(width: 800, height: 600, title: "Hinnat tänään")
 |> Vl.encode_field(:x, "date", type: :temporal)
 |> Vl.encode_field(:y, "price", type: :quantitative)
 ```
+
+## Custom graafi
 
 ```elixir
 Vl.new(width: 800, height: 500, title: "Sähkön hinta tänään")
