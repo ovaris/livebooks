@@ -15,7 +15,7 @@ alias VegaLite, as: Vl
 
 ```elixir
 {:ok, %HTTPoison.Response{status_code: 200, body: body}} =
-  HTTPoison.get("https://spotti.fly.dev/api/price/toda")
+  HTTPoison.get("https://spotti.fly.dev/api/price/today")
 
 price_data = Jason.decode!(body)
 ```
