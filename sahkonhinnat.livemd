@@ -72,10 +72,16 @@ Vl.new(width: 800, height: 500, title: "Electricity prices today")
 price_data
 |> Enum.sort_by(&Map.fetch!(&1, "price"))
 |> Enum.take(5)
+```
 
-# |> Enum.map(fn %{"date" => date, "price" => price} ->
-#  {:ok, dt, _} = DateTime.from_iso8601(date)
-#  {Calendar.strftime(dt, "%H:%M"), price}
-# end)
-# |> Enum.with_index(1)
+## Rank
+
+Calculate rank based on price, chepeast hour has lowest rank
+
+```elixir
+price_data
+|> Enum.sort_by(&Map.fetch!(&1, "price"))
+|> Enum.with_index(1)
+|> Enum.sort_by(fn {data, _} -> Map.fetch(data, "date") end)
+|> Enum.map(fn {data, rank} -> Map.put_new(data, "rank", rank) end)
 ```
