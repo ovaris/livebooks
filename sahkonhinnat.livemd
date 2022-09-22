@@ -5,7 +5,8 @@ Mix.install([
   {:jason, "~> 1.3"},
   {:httpoison, "~> 1.8"},
   {:vega_lite, "~> 0.1.4"},
-  {:kino_vega_lite, "~> 0.1.1"}
+  {:kino_vega_lite, "~> 0.1.1"},
+  {:kino, "~> 0.6.1"}
 ])
 
 alias VegaLite, as: Vl
@@ -21,26 +22,18 @@ API provides following endpoints
 * `/api/price/now` current hour price
 * `/api/price/next_24hrs` prices on following 24hrs
 
+<!-- livebook:{"reevaluate_automatically":true} -->
+
 ```elixir
 {:ok, %HTTPoison.Response{status_code: 200, body: body}} =
-  HTTPoison.get("https://spotti.fly.dev/api/price/today")
+  HTTPoison.get("https://spotti.fly.dev/api/price/next_24hrs")
 
 price_data = Jason.decode!(body)
 ```
 
-## Using smartcell chart
+## Graph
 
-<!-- livebook:{"attrs":{"chart_title":"Prices today","height":600,"layers":[{"chart_type":"bar","color_field":null,"color_field_aggregate":null,"color_field_type":null,"data_variable":"price_data","x_field":"date","x_field_aggregate":null,"x_field_type":"temporal","y_field":"price","y_field_aggregate":null,"y_field_type":"quantitative"}],"vl_alias":"Elixir.Vl","width":800},"kind":"Elixir.KinoVegaLite.ChartCell","livebook_object":"smart_cell"} -->
-
-```elixir
-Vl.new(width: 800, height: 600, title: "Prices today")
-|> Vl.data_from_values(price_data, only: ["date", "price"])
-|> Vl.mark(:bar)
-|> Vl.encode_field(:x, "date", type: :temporal)
-|> Vl.encode_field(:y, "price", type: :quantitative)
-```
-
-## Custom graph
+<!-- livebook:{"reevaluate_automatically":true} -->
 
 ```elixir
 Vl.new(width: 800, height: 500, title: "Electricity prices today")
@@ -68,6 +61,8 @@ Vl.new(width: 800, height: 500, title: "Electricity prices today")
 
 ## Cheapest hours
 
+<!-- livebook:{"reevaluate_automatically":true} -->
+
 ```elixir
 price_data
 |> Enum.sort_by(&Map.fetch!(&1, "price"))
@@ -78,10 +73,36 @@ price_data
 
 Calculate rank based on price, chepeast hour has lowest rank
 
+<!-- livebook:{"reevaluate_automatically":true} -->
+
 ```elixir
 price_data
 |> Enum.sort_by(&Map.fetch!(&1, "price"))
 |> Enum.with_index(1)
-|> Enum.sort_by(fn {data, _} -> Map.fetch(data, "date") end)
+|> Enum.sort_by(&Map.fetch!(elem(&1, 0), "date"))
 |> Enum.map(fn {data, rank} -> Map.put_new(data, "rank", rank) end)
 ```
+
+## Period of cheapest hours
+
+```elixir
+hours = Kino.Input.number("Period (hrs)", default: 3)
+```
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+period = Kino.Input.read(hours)
+
+price_data
+|> Enum.with_index()
+|> Enum.map(fn {data, index} ->
+  next_items = Enum.slice(price_data, index..(index + period - 1))
+  sum = next_items |> Enum.map(&Map.fetch!(&1, "price")) |> Enum.sum()
+  avg_next_hrs = (sum / min(period, length(next_items))) |> Float.round(2)
+  Map.put_new(data, "avg_next", avg_next_hrs)
+end)
+|> Enum.slice(0..(-period - 1))
+```
+
+value of avg_next means average price of next N hours
