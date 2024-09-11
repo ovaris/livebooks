@@ -1,0 +1,57 @@
+<!-- livebook:{"app_settings":{"auto_shutdown_ms":3600000,"show_source":true,"slug":"fonzit-crawler"}} -->
+
+# Fonzit-crawler
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.14.0"},
+  {:floki, "~> 0.33.0"},
+  {:httpoison, "~> 2.2.1"}
+])
+```
+
+## Tietojen haku
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+input =
+  Kino.Input.text("Anna osoite", default: "https://fonzit.fi/meista/tiimi")
+```
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+defmodule FonzitSivut do
+  def get_henkiloesittelyt(osoite) do
+    HTTPoison.get(osoite, [], follow_redirect: true)
+    |> then(fn {_, result} -> result.body end)
+    |> Floki.parse_document!()
+    |> Floki.find("li.d-tiimi a")
+    |> Floki.attribute("href")
+    |> Stream.map(&HTTPoison.get/1)
+    |> Stream.map(fn {_, result} -> result.body end)
+    |> Stream.map(&Floki.parse_document!/1)
+    |> Stream.map(&Floki.find(&1, "#main"))
+    |> Stream.map(&Floki.text/1)
+  end
+end
+```
+
+```elixir
+osoite = Kino.Input.read(input)
+
+tekstit =
+  FonzitSivut.get_henkiloesittelyt(osoite)
+  |> Enum.join("\n\n")
+
+IO.puts(tekstit)
+
+Kino.Download.new(
+  fn -> tekstit end,
+  filename: "tekstit.txt",
+  label: "Lataappa tästä"
+)
+```
+
+<!-- livebook:{"offset":1190,"stamp":{"token":"XCP.78feF01ffsoaD4UOGcQyhclXpEGPN0nMHOlREAj8Bkpkx_xA59DxrqqoibEjJweY4Y-fSExWCT_GcB9Xkz8t1T4LP26N3UzWcr16rjk_zV99L-nLhP7XtvLa","version":2}} -->
