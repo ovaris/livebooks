@@ -45,13 +45,15 @@ tekstit =
   FonzitSivut.get_henkiloesittelyt(osoite)
   |> Enum.join("\n\n")
 
-IO.puts(tekstit)
-
 Kino.Download.new(
   fn -> tekstit end,
   filename: "tekstit.txt",
-  label: "Lataappa tästä"
+  label: "Lataa tiedostona"
 )
 ```
 
-<!-- livebook:{"offset":1190,"stamp":{"token":"XCP.78feF01ffsoaD4UOGcQyhclXpEGPN0nMHOlREAj8Bkpkx_xA59DxrqqoibEjJweY4Y-fSExWCT_GcB9Xkz8t1T4LP26N3UzWcr16rjk_zV99L-nLhP7XtvLa","version":2}} -->
+```elixir
+Kino.Text.new(tekstit)
+```
+
+<!-- livebook:{"offset":1210,"stamp":{"token":"XCP.TFhHQEnQutUUEG5oJ7Ovts0Se1muVDIWnRT00g9i00boPVGYPj1n3HXmaAGL9v7SvI-e2JMlhBLeMonyOIU5oej3eOPVnUKv6Y6cCtkSa7uzg8M7I0WAF1Kl","version":2}} -->
